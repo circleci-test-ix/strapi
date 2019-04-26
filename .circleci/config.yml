@@ -4,7 +4,44 @@ version: 2.1
 # Use a package of configuration called an orb, see https://circleci.com/docs/2.0/orb-intro/
 orbs:
   # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.3.1
+  welcome: circleci/welcome-orb@0.3.1            
+
+# Run the welcome/run job in its own container
+jobs:
+    build:
+        working_directory: ~/mern-starter
+        docker:
+            - image: circleci/node:11.14.0
+            - image: circleci/postgres:9.6-alpine
+        steps:
+            - checkout
+            - run:
+                name: update-npm
+                command: 'sudo npm install -g npm@6.7.0'
+            - restore_cache:
+                key: dependency-cache-{{ checksum "package.json" }}
+            - run:
+                name: run-setup-ci
+                command: sudo npm run setup:ci
+            - run:
+                name: install-npm-wee
+                command: sudo npm install -g wait-on
+            - save_cache:
+                key: dependency-cache-{{ checksum "package.json" }}
+                paths:
+                    - ./node_modules
+            - run:
+                name: test
+                command: sudo npx snyk auth ${SNYK_TOKEN} && sudo npx snyk test
+            - run:
+                name: test-lint
+                command: sudo npm run -s lint
+            - run:
+                name: test-unit
+                command: sudo npm run -s test:unit
+            - run:
+                name: test-front
+                command: sudo npm run -s test:front
 
 # Orchestrate or schedule a set of jobs, see https://circleci.com/docs/2.0/workflows/
 workflows:
@@ -13,3 +50,4 @@ workflows:
     # Run the welcome/run job in its own container
     jobs:
       - welcome/run
+      - build
