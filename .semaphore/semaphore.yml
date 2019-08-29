@@ -1,0 +1,18 @@
+# Run CI/CD jobs in Docker images:
+# https://docs.semaphoreci.com/article/127-custom-ci-cd-environment-with-docker
+version: v1.0
+name: Hello Semaphore
+agent:
+  machine:
+    type: e1-standard-2
+  containers:
+    - name: main
+      image: semaphoreci/node:10
+blocks:
+  - name: Docker-based example
+    task:
+      jobs:
+      - name: Hello
+        commands:
+          - checkout
+          - yarn setup
