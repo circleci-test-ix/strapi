@@ -1,26 +1,21 @@
+# Run CI/CD jobs in Docker images:
+# https://docs.semaphoreci.com/article/127-custom-ci-cd-environment-with-docker
 version: v1.0
-name: Agent
+name: Hello Semaphore
 agent:
   machine:
     type: e1-standard-2
-    os_image: ubuntu1804
-
-
+  containers:
+    - name: main
+      image: semaphoreci/node:10
 blocks:
-  - name: "Set things up"
+  - name: Docker-based example
     task:
       jobs:
-        - name: Compile
-          commands:
-            - checkout
-            - yarn setup
-            - yarn global add -g wait-on
-  - name: "Unit tests"
-    task:
-      jobs:
-        - name: Unit
-          commands:
-            - checkout
-            - yarn run -s lint
-            - yarn run -s test:unit
-            - yarn run -s test:front
+      - name: Hello
+        commands:
+          - checkout
+          - yarn global add -g wait-on
+          - yarn run -s lint
+          - yarn run -s test:unit
+          - yarn run -s test:front
