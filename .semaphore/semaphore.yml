@@ -1,0 +1,18 @@
+blocks:
+  - name: "Set things up"
+    task:
+      jobs:
+        - name: Compile
+          commands:
+            - checkout
+            - yarn setup
+            - yarn global add -g wait-on
+  - name: "Unit tests"
+    task:
+      jobs:
+        - name: Unit
+          commands:
+            - checkout
+            - yarn run -s lint
+            - yarn run -s test:unit
+            - yarn run -s test:front
