@@ -13,6 +13,17 @@ agent:
       env_vars:
         - name: POSTGRES_PASSWORD
           value: keyboard-cat
+    - name: mysql
+      image: mysql
+      env_vars:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpw
+        - name: MYSQL_DATABASE
+          value: strapi_test
+        - name: MYSQL_USER
+          value: ci
+        - name: MYSQL_PASSWORD
+          value: passw0rd
 blocks:
   - name: Docker-based example
     task:
@@ -29,6 +40,9 @@ blocks:
           - PGPASSWORD="keyboard-cat" createdb -U postgres -h postgres -p 5432 -e strapi_test
           #- psql -c 'create database strapi_test;' -U postgres -h postgres -p 5432
           - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=postgres --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword=keyboard-cat'
+          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
+          - yarn run -s test:e2e
+          - yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd'
           - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
           - yarn run -s test:e2e
           
