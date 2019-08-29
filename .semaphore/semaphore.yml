@@ -1,3 +1,5 @@
+version: v1.0
+
 blocks:
   - name: "Set things up"
     task:
