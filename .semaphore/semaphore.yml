@@ -14,7 +14,7 @@ agent:
         - name: POSTGRES_PASSWORD
           value: keyboard-cat
     - name: mysql
-      image: mysql
+      image: mysql:5.7
       env_vars:
         - name: MYSQL_ROOT_PASSWORD
           value: rootpw
