@@ -23,8 +23,8 @@ blocks:
           - yarn run -s test:unit
           - yarn run -s test:front
           - apt-get update && apt-get install -y postgresql-client
-          - psql -c 'create database strapi_test;' -U postgres -h postgres -p 5432
-          - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=postgres --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword='
+          - psql -c 'create database strapi_test;' -U postgres -h localhost -p 5432
+          - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=localhost --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword='
           - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
           - yarn run -s test:e2e
           
