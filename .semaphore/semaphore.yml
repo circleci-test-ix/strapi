@@ -34,13 +34,16 @@ blocks:
       - name: Hello
         commands:
           - checkout
+          - cache restore app
           - yarn setup
           - yarn global add -g wait-on          
+          - cache store app ./
   - name: Tests
     task:
       prologue:
         commands:
           - checkout
+          - cache restore app
       jobs:
       - name: Unit Test
         commands:
