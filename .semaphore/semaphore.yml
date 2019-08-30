@@ -25,24 +25,34 @@ agent:
         - name: MYSQL_PASSWORD
           value: passw0rd
 blocks:
-  - name: Docker-based example
+  - name: Setup
     task:
       jobs:
       - name: Hello
         commands:
           - checkout
           - yarn setup
-          - yarn global add -g wait-on
-          - yarn run -s lint
-          - yarn run -s test:unit
-          - yarn run -s test:front
-          - apt-get update && apt-get install -y postgresql-client
-          - PGPASSWORD="keyboard-cat" createdb -U postgres -h postgres -p 5432 -e strapi_test
-          #- psql -c 'create database strapi_test;' -U postgres -h postgres -p 5432
-          - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=postgres --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword=keyboard-cat'
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e
-          - yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd'
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e
-          
+          - yarn global add -g wait-on          
+  - name: Tests
+    task:
+      prologue:
+        commands:
+          - checkout
+    jobs:
+    - name: Unit Test
+      commands:
+        - yarn run -s lint
+        - yarn run -s test:unit
+        - yarn run -s test:front
+    - name: "Postgres E2E"
+      commands:
+        - apt-get update && apt-get install -y postgresql-client
+        - PGPASSWORD="keyboard-cat" createdb -U postgres -h postgres -p 5432 -e strapi_test
+        - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=postgres --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword=keyboard-cat'
+        - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
+        - yarn run -s test:e2e
+    - name: "MySql E2E"
+      commands:
+        - yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd'
+        - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
+        - yarn run -s test:e2e
