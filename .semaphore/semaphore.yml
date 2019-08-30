@@ -24,6 +24,9 @@ agent:
           value: ci
         - name: MYSQL_PASSWORD
           value: passw0rd
+    - name: mongo
+      image: mongo
+      
 blocks:
   - name: Setup
     task:
@@ -54,5 +57,15 @@ blocks:
       - name: "MySql E2E"
         commands:
           - yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd'
+          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
+          - yarn run -s test:e2e
+      - name: "SqlLite E2E"
+        commands:
+          - yarn run -s test:generate-app -- '--dbclient=sqlite --dbfile=./tmp/data.db'
+          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
+          - yarn run -s test:e2e          
+      - name: "Mongo E2E"
+        commands:
+          - yarn run -s test:generate-app -- '--dbclient=mongo --dbhost=mongo --dbport=27017 --dbname=strapi_test --dbusername= --dbpassword='
           - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
           - yarn run -s test:e2e
