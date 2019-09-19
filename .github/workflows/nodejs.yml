@@ -9,8 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1    
-    - name: npm install, build, and test
-      uses: docker://node:10
+    - name: npm install, build, and test      
       run: |
         yarn setup
         yarn run -s lint
