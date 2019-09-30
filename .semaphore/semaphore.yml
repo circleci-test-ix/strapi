@@ -1,20 +1,19 @@
-# Run CI/CD jobs in Docker images:
-# https://docs.semaphoreci.com/article/127-custom-ci-cd-environment-with-docker
 version: v1.0
 name: Hello Semaphore
 agent:
   machine:
     type: e1-standard-2
+    os_image: ubuntu1804
   containers:
     - name: main
-      image: semaphoreci/node:10
+      image: 'semaphoreci/node:10'
     - name: postgres
-      image: postgres:9.6
+      image: 'postgres:9.6'
       env_vars:
         - name: POSTGRES_PASSWORD
           value: keyboard-cat
     - name: mysql
-      image: mysql:5.7
+      image: 'mysql:5.7'
       env_vars:
         - name: MYSQL_ROOT_PASSWORD
           value: rootpw
@@ -26,18 +25,17 @@ agent:
           value: passw0rd
     - name: mongo
       image: mongo
-      
 blocks:
   - name: Setup
     task:
       jobs:
-      - name: Hello
-        commands:
-          - checkout
-          - cache restore app
-          - yarn setup
-          - yarn global add -g wait-on          
-          - cache store app ./
+        - name: Hello
+          commands:
+            - checkout
+            - cache restore app
+            - yarn setup
+            - yarn global add -g wait-on
+            - cache store app ./
   - name: Tests
     task:
       prologue:
@@ -45,30 +43,51 @@ blocks:
           - checkout
           - cache restore app
       jobs:
-      - name: Unit Test
-        commands:
-          - yarn run -s lint
-          - yarn run -s test:unit
-          - yarn run -s test:front
-      - name: "Postgres E2E"
-        commands:
-          - apt-get update && apt-get install -y postgresql-client
-          - PGPASSWORD="keyboard-cat" createdb -U postgres -h postgres -p 5432 -e strapi_test
-          - yarn run -s test:generate-app -- '--dbclient=postgres --dbhost=postgres --dbport=5432 --dbname=strapi_test --dbusername=postgres --dbpassword=keyboard-cat'
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e
-      - name: "MySql E2E"
-        commands:
-          - yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd'
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e
-      - name: "SqlLite E2E"
-        commands:
-          - yarn run -s test:generate-app -- '--dbclient=sqlite --dbfile=./tmp/data.db'
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e          
-      - name: "Mongo E2E"
-        commands:
-          - yarn run -s test:generate-app -- '--dbclient=mongo --dbhost=mongo --dbport=27017 --dbname=strapi_test --dbusername= --dbpassword='
-          - yarn run -s test:start-app & ./node_modules/.bin/wait-on http://localhost:1337
-          - yarn run -s test:e2e
+        - name: Unit Test
+          commands:
+            - yarn run -s lint
+            - 'yarn run -s test:unit'
+            - 'yarn run -s test:front'
+            - echo test
+        - name: Postgres E2E
+          commands:
+            - apt-get update && apt-get install -y postgresql-client
+            - >-
+              PGPASSWORD="keyboard-cat" createdb -U postgres -h postgres -p 5432
+              -e strapi_test
+            - >-
+              yarn run -s test:generate-app -- '--dbclient=postgres
+              --dbhost=postgres --dbport=5432 --dbname=strapi_test
+              --dbusername=postgres --dbpassword=keyboard-cat'
+            - >-
+              yarn run -s test:start-app & ./node_modules/.bin/wait-on
+              http://localhost:1337
+            - 'yarn run -s test:e2e'
+        - name: MySql E2E
+          commands:
+            - >-
+              yarn run -s test:generate-app -- '--dbclient=mysql --dbhost=mysql
+              --dbport=3306 --dbname=strapi_test --dbusername=ci
+              --dbpassword=passw0rd'
+            - >-
+              yarn run -s test:start-app & ./node_modules/.bin/wait-on
+              http://localhost:1337
+            - 'yarn run -s test:e2e'
+        - name: SqlLite E2E
+          commands:
+            - >-
+              yarn run -s test:generate-app -- '--dbclient=sqlite
+              --dbfile=./tmp/data.db'
+            - >-
+              yarn run -s test:start-app & ./node_modules/.bin/wait-on
+              http://localhost:1337
+            - 'yarn run -s test:e2e'
+        - name: Mongo E2E
+          commands:
+            - >-
+              yarn run -s test:generate-app -- '--dbclient=mongo --dbhost=mongo
+              --dbport=27017 --dbname=strapi_test --dbusername= --dbpassword='
+            - >-
+              yarn run -s test:start-app & ./node_modules/.bin/wait-on
+              http://localhost:1337
+            - 'yarn run -s test:e2e'
