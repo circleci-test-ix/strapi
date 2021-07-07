@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  app:
+    image: node:10
+    volumes:
+      - .:/app
+
+  e2e_tests:
+    image: node:10
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - mysql
+      # - mongo
+
+  buildkite_ci:
+    build: .
+    links:
+      - postgres:postgres
+      - mysql:mysql
+      - mongo:mongo
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      # CI envs
+      CI:
+      RAILS_ENV:
+      # CI envs For Knapsack
+      BUILDKITE_PARALLEL_JOB:
+      BUILDKITE_PARALLEL_JOB_COUNT:
+      BUILDKITE_COMMIT:
+      BUILDKITE_BRANCH:
+      BUILDKITE_REPO:
+      BUILDKITE_BUILD_ID:
+      BUILDKITE_BUILD_NUMBER:
+    entrypoint: wait-for-it.sh postgres:5432 -s -- wait-for-it.sh mysql:3306 -s -- wait-for-it.sh mongo:27017 -s --
+
+  mysql_tests:
+    image: node:10
+    depends_on:
+      - mysql
+
+  postgres:
+    image: postgres
+
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'rootpw'
+      MYSQL_DATABASE: 'strapi_test'
+      MYSQL_USER: 'ci'
+      MYSQL_PASSWORD: 'passw0rd'
+
+  mongo:
+    image: mongo:4    
+
+volumes:
+  my_dbdata:

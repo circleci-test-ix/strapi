@@ -1,0 +1,26 @@
+# jobs:
+#     - job: job1      
+#       steps:
+#         - script: docker-compose build buildkite_ci
+#         - script: docker-compose run --rm buildkite_ci bash ci.sh
+
+resources:
+  containers:
+  - container: mysql
+    image: mysql:latest
+
+jobs:
+    - job: job1      
+      container: node:10
+      steps:
+        - script: yarn setup 
+        - publish: './'
+          artifact: 'app'
+
+    - job: job2
+      container: node:10
+      services:
+        mysql: mysql
+      steps:
+        - download: 'current'
+        - script: yarn run -s test:generate-app -- "--dbclient=mysql --dbhost=mysql --dbport=3306 --dbname=strapi_test --dbusername=ci --dbpassword=passw0rd"
